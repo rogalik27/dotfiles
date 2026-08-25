@@ -4,3 +4,5 @@
 .DS_Store
 nvim/lazy-lock.json.bak
 .config/opencode/node_modules/
+.config/waybar/.active_config
+.config/sway/.generated_settings/
