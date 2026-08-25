@@ -1,0 +1,11 @@
+[Unit]
+Description=AirPods Battery Daemon (passive BLE)
+After=bluetooth.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/mivanchenko/.config/waybar/scripts/bt_battery_daemon.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

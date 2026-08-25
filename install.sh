@@ -28,6 +28,9 @@ fi
 PACKAGES=(
   sway swaync waybar mako rofi alacritty kitty tmux neovim
   i3 htop mc git curl fish nushell libinput-tools
+  grim slurp swappy wl-clipboard libnotify-bin cliphist
+  swayidle swaylock brightnessctl pulseaudio-utils network-manager
+  dbus polkitd lxpolkit jq playerctl python3 chafa
 )
 
 if command -v apt >/dev/null 2>&1; then
@@ -65,6 +68,28 @@ fi
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
   log "Installing tmux plugin manager"
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+fi
+
+# wayfreeze (used by bin/screenshot-edit.sh) — not packaged for Debian, built via cargo
+if ! command -v wayfreeze >/dev/null 2>&1 && ! [ -x "$HOME/.cargo/bin/wayfreeze" ]; then
+  if ! command -v cargo >/dev/null 2>&1; then
+    log "Installing Rust toolchain (needed to build wayfreeze)"
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    # shellcheck disable=SC1091
+    . "$HOME/.cargo/env"
+  fi
+  log "Building wayfreeze"
+  cargo install wayfreeze
+fi
+
+# AirStatus (AirPods battery reader backing the airstatus.service unit)
+if [ ! -d "$HOME/.local/share/AirStatus/.git" ]; then
+  log "Cloning AirStatus"
+  git clone https://github.com/delphiki/AirStatus "$HOME/.local/share/AirStatus"
+  if command -v pip3 >/dev/null 2>&1; then
+    pip3 install --user -r "$HOME/.local/share/AirStatus/requirements.txt" --break-system-packages 2>/dev/null \
+      || pip3 install --user -r "$HOME/.local/share/AirStatus/requirements.txt"
+  fi
 fi
 
 # worktime (the `wt` CLI time tracker) — separate repo, built from source
@@ -133,8 +158,27 @@ for entry in "$DOTFILES_DIR"/.config/*; do
     done
     continue
   fi
+  # systemd user units: the rest of ~/.config/systemd/user is package-managed
+  # symlinks (pipewire, wireplumber, gnome-keyring...) recreated by their own
+  # packages — only link the units we actually author ourselves.
+  if [ "$name" = "systemd" ]; then
+    mkdir -p "$HOME/.config/systemd/user"
+    for f in "$entry"/user/*; do
+      link "$f" "$HOME/.config/systemd/user/$(basename "$f")"
+    done
+    continue
+  fi
   link "$entry" "$HOME/.config/$name"
 done
+
+if systemctl --user status >/dev/null 2>&1; then
+  log "Enabling airstatus + bt-battery-daemon user services"
+  systemctl --user daemon-reload
+  systemctl --user enable --now airstatus.service bt-battery-daemon.service
+else
+  log "No systemd user session available — enable airstatus/bt-battery-daemon manually later:"
+  log "  systemctl --user enable --now airstatus.service bt-battery-daemon.service"
+fi
 
 log "Done. Start a new shell, then inside tmux press prefix+I to fetch plugins."
 log "Set NWS_AI_API_KEY in your environment (or edit ~/.config/opencode/opencode.jsonc) for opencode's NWS provider."

@@ -41,6 +41,16 @@ the expected symlink.
   project/repo, not vendored here. `install.sh` clones it into a temp dir,
   runs `go build`, and installs the resulting binary as `~/.local/bin/wt`
   (installing `golang-go` via apt first if needed).
+- `wayfreeze` isn't packaged for Debian — `install.sh` installs a Rust
+  toolchain via rustup if needed and `cargo install`s it.
+- [AirStatus](https://github.com/delphiki/AirStatus) (AirPods battery reader)
+  is cloned by `install.sh` into `~/.local/share/AirStatus`, same pattern as
+  worktime — separate upstream project, not vendored.
+- `.config/systemd/user/` only tracks the two units we actually author
+  (`airstatus.service`, `bt-battery-daemon.service`). Everything else under
+  `~/.config/systemd/user` on this machine is a symlink created by other
+  packages (pipewire, wireplumber, gnome-keyring) and gets recreated
+  automatically when those packages are installed/enabled.
 - Secrets, credentials, machine-specific caches (`.docker/`, browser
   profiles, `gh/hosts.yml`, shell history, `dconf`, certs, etc.) are
   intentionally excluded.
