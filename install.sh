@@ -31,6 +31,7 @@ PACKAGES=(
   grim slurp swappy wl-clipboard libnotify-bin cliphist
   swayidle swaylock brightnessctl pulseaudio-utils network-manager
   dbus polkitd lxpolkit jq playerctl python3 chafa
+  flameshot nautilus
 )
 
 if command -v apt >/dev/null 2>&1; then
