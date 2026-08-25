@@ -1,0 +1,5 @@
+#!/bin/bash
+export LD_LIBRARY_PATH="$HOME/.local/opt/gtk4-layer-shell/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH"
+export GI_TYPELIB_PATH="$HOME/.local/opt/gtk4-layer-shell/lib/x86_64-linux-gnu/girepository-1.0:$GI_TYPELIB_PATH"
+export GSETTINGS_SCHEMA_DIR="$HOME/.local/share/apps/SwaySettings/schemas"
+exec "$HOME/.local/share/apps/SwaySettings/build/src/Settings/swaysettings" "$@"

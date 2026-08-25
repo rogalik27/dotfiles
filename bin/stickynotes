@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+cd "$HOME/.local/share/apps/textual-sticky-notes-tui"
+exec uv run src/main.py

@@ -1,0 +1,229 @@
+# i3 config translated from the provided Sway config
+# Original Sway config path context: /home/mivanchenko/.config/sway/
+#
+# Notes:
+# - Sway/Wayland-only commands were replaced with X11/i3 equivalents where practical.
+# - Touchpad and window matching under X11 may need checking with `xinput list` and `xprop`.
+# - Optional helper tools used below: dunst, xss-lock, i3lock, maim, xclip, clipmenu, clipmenud.
+# Hide window title bars
+default_border pixel 1
+default_floating_border pixel 1
+
+# Force it for all new windows, useful on newer i3 versions
+for_window [class="^.*"] border pixel 1
+
+### Variables
+set $mod Mod4
+set $left h
+set $down j
+set $up k
+set $right l
+set $term alacritty
+set $menu rofi -show drun -show-icons
+set $sway_config_dir /home/mivanchenko/.config/sway
+
+# i3 include replacement. Keep commented if the directory does not exist on your system.
+# include /etc/i3/config-vars.d/*
+
+### Startup / session utilities
+
+# Sway: exec mako
+# X11/i3 replacement:
+exec --no-startup-id dunst
+
+# Sway idle/lock replacement.
+# Locks after the X screensaver timeout and locks before suspend via logind.
+exec --no-startup-id xset s 300 5
+exec --no-startup-id xset dpms 600 600 600
+exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock -c 000000
+
+### Input configuration
+
+# Sway input replacement for keyboard layout/options.
+# Keyboard layout: German + US, switch with Alt+Shift
+# Clears old XKB options first, so Caps Lock is no longer Escape.
+exec_always --no-startup-id setxkbmap -layout de,us -option '' -option 'grp:alt_shift_toggle'
+
+# Sway had: bindsym $mod+Shift_L input type:keyboard xkb_switch_layout next
+# i3 cannot switch XKB layouts natively. Install `xkb-switch` for this binding,
+# or use the commented setxkbmap variant below for a pure-XKB shortcut.
+bindsym $mod+Shift_L exec --no-startup-id xkb-switch -n
+# Alternative without xkb-switch, but it may interfere with Mod+Shift shortcuts:
+# exec --no-startup-id setxkbmap -layout de,ua -option grp:win_shift_toggle,caps:escape
+
+# Touchpad replacement for Sway input block.
+# Device/property names can differ under X11. Check with `xinput list` and `xinput list-props <device>`.
+exec --no-startup-id xinput --set-prop "ELAN06C6:00 04F3:3193 Touchpad" "libinput Tapping Enabled" 1
+exec --no-startup-id xinput --set-prop "ELAN06C6:00 04F3:3193 Touchpad" "libinput Natural Scrolling Enabled" 0
+# Usually tuple format is: two-finger, edge, button. Leave commented until verified on your system.
+# exec --no-startup-id xinput --set-prop "ELAN06C6:00 04F3:3193 Touchpad" "libinput Scroll Method Enabled" 1 0 0
+
+### Key bindings
+
+# Start a terminal
+bindsym $mod+Return exec --no-startup-id $term
+
+# Kill focused window
+bindsym $mod+q kill
+
+# Start launcher
+bindsym $mod+d exec --no-startup-id $menu
+
+# Drag floating windows with $mod + left mouse; resize with $mod + right mouse.
+floating_modifier $mod
+
+# Reload config
+bindsym $mod+Shift+c reload
+
+# Exit i3
+bindsym $mod+Shift+e exec --no-startup-id "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X11 session.' -B 'Yes, exit i3' 'i3-msg exit'"
+
+### Moving around
+
+bindsym $mod+$left focus left
+bindsym $mod+$down focus down
+bindsym $mod+$up focus up
+bindsym $mod+$right focus right
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+
+bindsym $mod+Shift+$left move left
+bindsym $mod+Shift+$down move down
+bindsym $mod+Shift+$up move up
+bindsym $mod+Shift+$right move right
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+### Workspaces
+
+bindsym $mod+1 workspace number 1
+bindsym $mod+2 workspace number 2
+bindsym $mod+3 workspace number 3
+bindsym $mod+4 workspace number 4
+bindsym $mod+5 workspace number 5
+bindsym $mod+6 workspace number 6
+bindsym $mod+7 workspace number 7
+bindsym $mod+8 workspace number 8
+bindsym $mod+9 workspace number 9
+bindsym $mod+0 workspace number 10
+
+bindsym $mod+Shift+1 move container to workspace number 1
+bindsym $mod+Shift+2 move container to workspace number 2
+bindsym $mod+Shift+3 move container to workspace number 3
+bindsym $mod+Shift+4 move container to workspace number 4
+bindsym $mod+Shift+5 move container to workspace number 5
+bindsym $mod+Shift+6 move container to workspace number 6
+bindsym $mod+Shift+7 move container to workspace number 7
+bindsym $mod+Shift+8 move container to workspace number 8
+bindsym $mod+Shift+9 move container to workspace number 9
+bindsym $mod+Shift+0 move container to workspace number 10
+
+# Sway gestures do not exist in plain i3.
+# Sway:
+# bindgesture swipe:3:left  workspace next
+# bindgesture swipe:3:right workspace prev
+# Possible X11 replacement: configure libinput-gestures/touchegg externally.
+
+### Layout
+
+bindsym $mod+b splith
+bindsym $mod+v splitv
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+bindsym $mod+f fullscreen toggle
+bindsym $mod+Shift+space floating toggle
+bindsym $mod+space focus mode_toggle
+bindsym $mod+a focus parent
+
+### Scratchpad
+
+bindsym $mod+Shift+minus move scratchpad
+bindsym $mod+minus scratchpad show
+
+### Lock screen
+
+# Sway: swaylock
+bindsym Mod1+Mod4+l exec --no-startup-id i3lock -c 000000
+
+### Resize mode
+
+mode "resize" {
+    bindsym $left resize shrink width 10 px or 10 ppt
+    bindsym $down resize grow height 10 px or 10 ppt
+    bindsym $up resize shrink height 10 px or 10 ppt
+    bindsym $right resize grow width 10 px or 10 ppt
+
+    bindsym Left resize shrink width 10 px or 10 ppt
+    bindsym Down resize grow height 10 px or 10 ppt
+    bindsym Up resize shrink height 10 px or 10 ppt
+    bindsym Right resize grow width 10 px or 10 ppt
+
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+r mode "resize"
+
+### Utilities
+
+# PulseAudio / PipeWire Pulse volume controls
+bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle
+bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -5%
+bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +5%
+bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle
+
+# Brightness controls
+bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 10%-
+bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl set 10%+
+
+# Sway screenshot: grim + slurp + wl-copy
+# X11/i3 replacement: maim + xclip
+bindsym $mod+Shift+s exec --no-startup-id "maim -s | xclip -selection clipboard -t image/png"
+
+# Sway clipboard history: wl-paste + cliphist + wl-copy
+# X11/i3 replacement using clipmenu.
+exec --no-startup-id clipmenud
+bindsym $mod+Shift+v exec --no-startup-id clipmenu
+
+### Bar
+
+bar {
+    position top
+    status_command i3status
+
+    # If you still want to use your old Sway status script, uncomment this and verify it outputs i3bar-compatible JSON/text:
+    # status_command while $sway_config_dir/status.sh; do sleep 1; done
+
+    # colors {
+    #     statusline #ffffff
+    #     background #323232
+    #     inactive_workspace #32323200 #32323200 #5c5c5c
+    # }
+}
+
+### Appearance
+
+client.focused          #4a4a4a #5a5a5a #ffffff #b8b8b8 #4a4a4a
+client.focused_inactive #555555 #2b2b2b #d0d0d0 #555555 #555555
+client.unfocused        #3a3a3a #1f1f1f #bdbdbd #3a3a3a #1f1f1f
+client.urgent           #a33a3a #7a1f1f #ffffff #a33a3a #7a1f1f
+
+font pango:Cantarell 12
+
+default_border none
+default_floating_border none
+
+### Window rules
+
+# Sway used app_id; i3 on X11 uses WM_CLASS, inspect with `xprop`.
+for_window [class="(?i)pavucontrol"] floating enable, resize set 900 700, move position center
+for_window [class="(?i)org.gnome.Calculator|gnome-calculator|calculator"] floating enable
+for_window [class="(?i)yubico|yubioath"] floating enable, resize set 300 700, move position center
+for_window [class="(?i)evolution-alarm-notify"] floating enable, resize set 900 300, move position center
+
+# Optional distro include. Keep commented if missing or unsupported by your i3 version.
+# include /etc/i3/config.d/*

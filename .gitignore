@@ -1,0 +1,6 @@
+*.bak
+*~
+*.swp
+.DS_Store
+nvim/lazy-lock.json.bak
+.config/opencode/node_modules/

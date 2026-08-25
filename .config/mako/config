@@ -1,0 +1,8 @@
+anchor=top-right
+default-timeout=5000
+max-visible=5
+border-radius=8
+margin=10
+padding=12
+icons=1
+markup=1

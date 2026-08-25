@@ -1,0 +1,6 @@
+#!/bin/bash
+# GDM/wayland-session entry point for SwayFX. Runs the locally-built
+# swayfx binary (wlroots 0.18 + scenefx 0.3, matching this system's
+# installed wlroots) with the layered config (base config + fx.conf).
+export LD_LIBRARY_PATH="$HOME/.local/opt/swayfx/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH"
+exec "$HOME/.local/opt/swayfx/bin/sway" -c "$HOME/.config/sway/config-swayfx"

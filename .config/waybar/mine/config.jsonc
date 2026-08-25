@@ -1,0 +1,327 @@
+{
+    "layer": "bottom",
+    "modules-left": ["sway/workspaces", "hyprland/workspaces"/*, "wlr/taskbar" */,
+                     "custom/media-prev", "custom/media-play", "custom/media-info", "custom/media-next"],
+    // "hyprland/window" (was in modules-center)
+    "modules-center": [],
+    "modules-right": ["tray",
+                    "cpu", "memory", "temperature",
+                    "custom/caffeine",
+                    // "custom/weather",
+                    "group/group-volume",
+                    "bluetooth",
+                    "custom/bt-battery",
+                    "group/group-display",
+                    "network",
+                    "group/group-battery",
+                    /*"custom/power"*/
+                    "group/group-logout",
+                    "clock"
+                    ],
+    "tray": {
+        "spacing": 10
+    },
+    "cpu": {
+        "format": "　{usage}%"
+    },
+    "memory": {
+        "format": "　{}%"
+    },
+    "backlight": {
+        //"device": "intel_backlight",
+        "format": "　{percent}%",
+        "format-icons": ["", ""]
+    },
+    "battery": {
+        "interval": 1,
+        "format": "{icon} {capacity}%",
+        "states": {
+            "full": 95,
+            "great": 80,
+            "good": 70,
+            "well": 45,
+            "warning": 20,
+            "critical": 10
+        },
+        "format-icons": {
+            "default": "󱊣",
+            "discharging-full": "󱊣",
+            "discharging-great": "󱊣",
+            "discharging-good": "󱊢",
+            "discharging-well": "󱊡",
+            "discharging-warning": "󱊡",
+            "discharging-critical": "󰂃",
+            "charging-full": "󱊦 ",
+            "charging-great": "󱊦 ",
+            "charging-good": "󱊥 ",
+            "charging-well": "󱊤 ",
+            "charging-warning": "󱊤 ",
+            "charging-critical": "󰢟 "
+        },
+        "events": {
+            "on-discharging-warning": "notify-send -u normal 'Low Battery'",
+            "on-discharging-critical": "notify-send -u critical 'Very low battery'",
+            "on-charging-full": "notify-send -u normal 'Battery charged'"
+        }
+    },
+    "network": {
+        "interval": 1,
+        "format-wifi": "　{signalStrength}%",
+        // "format-ethernet": "{ifname}: {ipaddr}/{cidr} ethernet",
+        "format-ethernet": "{ipaddr}/{cidr} eth",
+        "format-disconnected": " ",
+        // "on-click": "nm-connection-editor",
+        "on-click": "alacritty -e nmtui",
+        "tooltip-format": " {bandwidthDownBytes} 󰬬 {bandwidthUpBytes}",
+        "tooltip-format-ethernet": "{ifname}: {ipaddr}/{cidr}\n  {bandwidthDownBytes} 󰬬 {bandwidthUpBytes}",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}/{cidr}     {bandwidthDownBytes} 󰬬 {bandwidthUpBytes}",
+        "tooltip-format-disconnected": "Disconnected"
+    },
+    "pulseaudio": {
+        "format": "{icon}  {volume}%",
+        "format-icons": {
+            "default-muted": "",
+            "bluetooth": "",
+            "headphones": "",
+            "headset": "",
+            "phone": "",
+            "phone-muted": "",
+            "portable": "",
+            "car": "",
+            "default": ["", "", ""]
+        },
+        "max-volume": 100,
+        // "on-click": "kitty alsamixer"
+        "on-click": "pavucontrol"
+    },
+    "temperature": {
+        "critical-threshold": 60,
+        "format": "{icon} {temperatureC}°C",
+        "format-icons": [""]
+    },
+    "clock": {
+        "interval": 1,
+        "tooltip": false,
+        "format": "{:%d-%m-%Y %H:%M:%S}",
+        "on-click": "swaync-client -t -sw"
+    },
+    "power-profiles-daemon": {
+          "format": "{icon} ",
+          "on-click": "/home/mivanchenko/.local/bin/swaysettings -p power",
+          "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+          "format-icons": {
+            "default": "",
+            "performance": "",
+            "balanced": "",
+            "power-saver": ""
+          }
+    },
+    "bluetooth": {
+        // "controller": "controller1", // specify the alias of the controller if there are more than 1 on the system
+        // "format": "󰂯 {status}",
+        // format-* handles every state, so default format is not necessary.
+        "format-on": "󰂯",
+        "format-off": "󰂲",
+        "format-disabled": "", // an empty format will hide the module
+        "on-click": "/home/mivanchenko/.local/bin/swaysettings -p bluetooth",
+        "format-connected": "󰂱 {num_connections}",
+        // "tooltip-format": "{controller_alias}\t{controller_address}",
+        // "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
+        "tooltip-format-connected": "{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}"
+    },
+	"sway/workspaces": {
+	},
+    "hyprland/workspaces": {
+        "format": "{id}",
+        "persistent-workspaces": {
+            "*": 0
+        }
+    },
+    "hyprland/window": {
+        "format": "{}"
+    },
+    "custom/power": {
+        "format": "{icon} ",
+        "format-icons": [""],
+        "on-click": "poweroff",
+        "tooltip-format": "Power off"
+    },
+    "custom/reboot": {
+        "format": "{icon} ",
+        "format-icons": [""],
+        "on-click": "reboot",
+        "tooltip-format": "Reboot"
+    },
+    "custom/lock": {
+        "format": "{icon} ",
+        "format-icons": [""],
+        "on-click": "swaylock -f -c 000000",
+        "tooltip-format": "Logout"
+    },
+    "custom/sleep": {
+        "format": "{icon} ",
+        "format-icons": [""],
+        "on-click": "sh -c 'swaylock -f -c 000000 && systemctl suspend'",
+        "tooltip-format": "Sleep"
+    },
+    "custom/weather": {
+        "exec": "${HOME}/.config/waybar/scripts/get_weather.sh Germany+Nürnberg",
+        "return-type": "json",
+        "format": "<small>{}</small>",
+        "tooltip": true,
+        "interval": 1800
+    },
+    "wlr/taskbar": {
+        "format": "{icon}",
+        "icon-size": 20,
+        "spacing": 3,
+        "on-click-middle": "close",
+        "tooltip-format": "{title}",
+        "on-click": "activate"
+    },
+      "custom/caffeine": {
+        "exec": "~/.config/waybar/scripts/caffeine.sh",
+        "return-type": "json",
+        "interval": 5,
+        "signal": 10,
+        "format": "{}",
+        "tooltip": true,
+        "on-click": "~/.config/waybar/scripts/caffeine.sh toggle"
+      },
+      "custom/notification": {
+        "tooltip": false,
+        "format": "{icon} ",
+        "format-icons": {
+          "notification": "<span foreground='red'><sup><small></small></sup></span>",
+          "none": "",
+          "dnd-notification": "<span foreground='red'><sup><small></small></sup></span>",
+          "dnd-none": "",
+          "inhibited-notification": "<span foreground='red'><sup><small></small></sup></span>",
+          "inhibited-none": "",
+          "dnd-inhibited-notification": "<span foreground='red'><sup><small></small></sup></span>",
+          "dnd-inhibited-none": ""
+        },
+        "return-type": "json",
+        "exec-if": "which swaync-client",
+        "exec": "swaync-client -swb",
+        "on-click": "swaync-client -t -sw",
+        "on-click-right": "swaync-client -d -sw",
+        "escape": true
+      },
+      "group/group-logout": {
+        "orientation": "horizontal",
+        "modules": [
+            "custom/power",
+            "custom/lock",
+            "custom/reboot",
+            "custom/sleep",
+            "custom/caffeine"
+        ],
+        "drawer": {
+            "children-class": "not-power",
+            "transition-duration": 500,
+            "transition-left-to-right": false
+        }
+      },
+      "group/group-volume": {
+        "orientation": "horizontal",
+        "modules": [
+            "pulseaudio",
+            "custom/media-toggle"
+        ],
+        "drawer": {
+            "children-class": "not-volume",
+            "transition-duration": 500,
+            "transition-left-to-right": false
+        }
+      },
+      "group/group-display": {
+        "orientation": "horizontal",
+        "modules": [
+            "backlight",
+            "custom/display-toggle",
+            "custom/mirror-toggle"
+        ],
+        "drawer": {
+            "children-class": "not-display",
+            "transition-duration": 500,
+            "transition-left-to-right": false
+        }
+      },
+      "custom/media-toggle": {
+        "format": "󰎇",
+        "on-click": "~/.config/waybar/scripts/media_toggle.sh",
+        "tooltip": false
+      },
+      "custom/media-prev": {
+        "format": "{}",
+        "exec-if": "! test -f /tmp/waybar_media_hidden",
+        "exec": "echo '󰒮'",
+        "interval": 3600,
+        "signal": 8,
+        "on-click": "playerctl previous",
+        "tooltip": false
+      },
+      "custom/media-play": {
+        "format": "{}",
+        "exec-if": "! test -f /tmp/waybar_media_hidden",
+        "exec": "~/.config/waybar/scripts/media_play.sh",
+        "interval": 1,
+        "signal": 8,
+        "on-click": "playerctl play-pause",
+        "tooltip": false
+      },
+      "custom/media-next": {
+        "format": "{}",
+        "exec-if": "! test -f /tmp/waybar_media_hidden",
+        "exec": "echo '󰒭'",
+        "interval": 3600,
+        "signal": 8,
+        "on-click": "playerctl next",
+        "tooltip": false
+      },
+      "custom/media-info": {
+        "exec-if": "! test -f /tmp/waybar_media_hidden",
+        "exec": "python3 ~/.config/waybar/scripts/media_info.sh",
+        "interval": 1,
+        "signal": 8,
+        "format": "{}",
+        "min-length": 25,
+        "on-click": "~/.config/waybar/scripts/media_toggle.sh",
+        "tooltip": false
+      },
+      "custom/bt-battery": {
+        "exec": "python3 ~/.config/waybar/scripts/bt_battery.py",
+        "return-type": "json",
+        "interval": 5,
+        "signal": 9,
+        "tooltip": true,
+        "escape": false,
+        "on-click": "pkill -RTMIN+9 waybar"
+      },
+      "custom/display-toggle": {
+        "format": "󰍺",
+        "on-click": "~/.config/waybar/scripts/toggle_display.sh",
+        "tooltip": true,
+        "tooltip-format": "Toggle external display (DP-1 + eDP-1)"
+      },
+      "custom/mirror-toggle": {
+        "format": "󰆟",
+        "on-click": "~/.config/waybar/scripts/toggle_mirror.sh",
+        "tooltip": true,
+        "tooltip-format": "Toggle mirror all displays"
+      },
+      "group/group-battery": {
+        "orientation": "horizontal",
+        "modules": [
+            "battery",
+            "power-profiles-daemon"
+        ],
+        "drawer": {
+            "children-class": "not-battery",
+            "transition-duration": 500,
+            "transition-left-to-right": false
+        }
+      }
+}

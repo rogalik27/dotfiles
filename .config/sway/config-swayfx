@@ -1,0 +1,6 @@
+# SwayFX session entry point: your normal sway config plus SwayFX-only
+# visual effects layered on top. The base config file is untouched and
+# stays fully compatible with the plain "Sway" session.
+
+include ~/.config/sway/config
+include ~/.config/sway/fx.conf
