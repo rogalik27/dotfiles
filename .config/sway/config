@@ -243,7 +243,7 @@ bindsym $mod+r mode "resize"
     # Special key to take a screenshot with grim
     # bindsym $mod+Shift+s exec grim
     # bindsym $mod+Shift+s exec grim -g "$(slurp -d)" - | wl-copy -t image/png
-    bindsym $mod+Shift+s exec 'wayfreeze --hide-cursor & PID=$!; sleep .1; grimshot copy area; kill $PID'
+    bindsym $mod+Shift+s exec ~/.local/bin/screenshot-edit.sh
 
 exec wl-paste --watch ~/.local/bin/cliphist store
 bindsym $mod+shift+v exec ~/.local/bin/cliphist list | rofi -dmenu | ~/.local/bin/cliphist decode | wl-copy
