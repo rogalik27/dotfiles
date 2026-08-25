@@ -67,6 +67,24 @@ if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
 fi
 
+# worktime (the `wt` CLI time tracker) — separate repo, built from source
+if ! command -v wt >/dev/null 2>&1 && ! [ -x "$HOME/.local/bin/wt" ]; then
+  if ! command -v go >/dev/null 2>&1 && command -v apt >/dev/null 2>&1; then
+    log "Installing Go (needed to build worktime)"
+    sudo apt install -y golang-go
+  fi
+  if command -v go >/dev/null 2>&1; then
+    log "Building worktime (wt)"
+    WORKTIME_SRC="$(mktemp -d)"
+    git clone https://github.com/TheSyscall/worktime "$WORKTIME_SRC"
+    (cd "$WORKTIME_SRC" && go build -o "$HOME/.local/bin/wt" .)
+    rm -rf "$WORKTIME_SRC"
+    chmod +x "$HOME/.local/bin/wt"
+  else
+    log "No Go toolchain available, skipping worktime build — install manually: https://github.com/TheSyscall/worktime"
+  fi
+fi
+
 # ---------------------------------------------------------------------------
 # 3. Symlink dotfiles into place
 # ---------------------------------------------------------------------------

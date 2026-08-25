@@ -10,8 +10,9 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/rogalik27/dotfiles/main/
 ```
 
 This clones the repo to `~/dotfiles`, installs the apt packages this config
-depends on, installs atuin/gh/lazygit/tpm if missing, and symlinks everything
-into place. Anything already present at a target path is moved into
+depends on, installs atuin/gh/lazygit/tpm if missing, builds the `wt`
+(worktime) CLI from source, and symlinks everything into place. Anything
+already present at a target path is moved into
 `~/.dotfiles-backup-<timestamp>/` first, not overwritten.
 
 Re-running `install.sh` is safe — it only backs up files that aren't already
@@ -36,9 +37,10 @@ the expected symlink.
   and only if it doesn't already exist locally — so a real API key you fill
   in later never gets written back into this repo. Set the `NWS_AI_API_KEY`
   env var for the NWS provider, or edit the file directly after install.
-- The [`worktime`](https://github.com/TheSyscall/worktime) CLI (`wt`) is a
-  separate project/repo and isn't vendored here — build/install it on its
-  own.
+- The [`worktime`](https://github.com/TheSyscall/worktime) CLI is a separate
+  project/repo, not vendored here. `install.sh` clones it into a temp dir,
+  runs `go build`, and installs the resulting binary as `~/.local/bin/wt`
+  (installing `golang-go` via apt first if needed).
 - Secrets, credentials, machine-specific caches (`.docker/`, browser
   profiles, `gh/hosts.yml`, shell history, `dconf`, certs, etc.) are
   intentionally excluded.
