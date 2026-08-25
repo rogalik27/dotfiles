@@ -106,6 +106,15 @@ for entry in "$DOTFILES_DIR"/.config/*; do
     done
     continue
   fi
+  # gh keeps a local, untracked hosts.yml (auth token) alongside config.yml.
+  # Symlink only what's tracked so hosts.yml is never displaced.
+  if [ "$name" = "gh" ]; then
+    mkdir -p "$HOME/.config/gh"
+    for f in "$entry"/*; do
+      link "$f" "$HOME/.config/gh/$(basename "$f")"
+    done
+    continue
+  fi
   link "$entry" "$HOME/.config/$name"
 done
 
