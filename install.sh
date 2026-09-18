@@ -76,8 +76,33 @@ link() {
   log "Linked $dest -> $src"
 }
 
+# Debian's apt-packaged neovim lags behind what this config needs (>= 0.11.2),
+# so fetch the current upstream release instead of relying on the distro.
+NVIM_MIN_VERSION="0.11.2"
+install_neovim() {
+  if command -v nvim >/dev/null 2>&1; then
+    local ver
+    ver=$(nvim --version | head -1 | grep -Po '\d+\.\d+\.\d+')
+    if [ "$(printf '%s\n%s\n' "$ver" "$NVIM_MIN_VERSION" | sort -V | head -1)" = "$NVIM_MIN_VERSION" ]; then
+      log "Neovim $ver already satisfies >= $NVIM_MIN_VERSION"
+      return
+    fi
+    log "Neovim $ver is older than $NVIM_MIN_VERSION, installing a current release"
+  else
+    log "Installing Neovim (>= $NVIM_MIN_VERSION) from upstream release"
+  fi
+  local tmpdir
+  tmpdir="$(mktemp -d)"
+  curl -Lo "$tmpdir/nvim-linux-x86_64.tar.gz" "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz"
+  sudo rm -rf /opt/nvim
+  sudo tar xzf "$tmpdir/nvim-linux-x86_64.tar.gz" -C /opt
+  sudo mv /opt/nvim-linux-x86_64 /opt/nvim
+  sudo ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim
+  rm -rf "$tmpdir"
+}
+
 if [ "$MODE" = "lazyvim" ]; then
-  LAZYVIM_PACKAGES=(neovim git curl ripgrep fd-find build-essential unzip chafa fortune-mod cowsay)
+  LAZYVIM_PACKAGES=(git curl ripgrep fd-find build-essential unzip chafa fortune-mod cowsay)
   if command -v apt >/dev/null 2>&1; then
     log "Installing packages via apt (sudo required)"
     sudo apt update
@@ -85,6 +110,8 @@ if [ "$MODE" = "lazyvim" ]; then
   else
     log "No apt found, skipping package install — install manually: ${LAZYVIM_PACKAGES[*]}"
   fi
+
+  install_neovim
 
   if ! command -v lazygit >/dev/null 2>&1; then
     log "Installing lazygit"
@@ -126,7 +153,7 @@ fi
 # 2. Install packages this config depends on
 # ---------------------------------------------------------------------------
 PACKAGES=(
-  sway swaync waybar mako rofi alacritty kitty tmux neovim
+  sway swaync waybar mako rofi alacritty kitty tmux
   i3 htop mc git curl fish nushell libinput-tools
   grim slurp swappy wl-clipboard libnotify-bin cliphist
   swayidle swaylock brightnessctl pulseaudio-utils network-manager
@@ -141,6 +168,8 @@ if command -v apt >/dev/null 2>&1; then
 else
   log "No apt found, skipping package install — install manually: ${PACKAGES[*]}"
 fi
+
+install_neovim
 
 if ! command -v gh >/dev/null 2>&1 && command -v apt >/dev/null 2>&1; then
   log "Installing GitHub CLI (gh)"
