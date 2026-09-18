@@ -8,6 +8,7 @@
 # INSTALL_MODE. If neither is given and the terminal is interactive, you'll
 # be prompted; otherwise it defaults to "everything".
 #   lazyvim    - just the Neovim/LazyVim config and the tools it needs
+#   tmux       - just the tmux config and its plugin manager
 #   everything - the full desktop setup (sway/waybar/tmux/etc), current behavior
 set -euo pipefail
 
@@ -22,10 +23,12 @@ if [ -z "$MODE" ]; then
   if [ -t 0 ]; then
     echo "What would you like to install?"
     echo "  1) lazyvim    - Neovim/LazyVim config only"
-    echo "  2) everything - full desktop setup (default)"
-    read -rp "Choice [2]: " choice
+    echo "  2) tmux       - tmux config only"
+    echo "  3) everything - full desktop setup (default)"
+    read -rp "Choice [3]: " choice
     case "$choice" in
       1) MODE="lazyvim" ;;
+      2) MODE="tmux" ;;
       *) MODE="everything" ;;
     esac
   else
@@ -33,9 +36,9 @@ if [ -z "$MODE" ]; then
   fi
 fi
 case "$MODE" in
-  lazyvim|everything) ;;
+  lazyvim|tmux|everything) ;;
   *)
-    echo "Unknown install mode: $MODE (expected 'lazyvim' or 'everything')" >&2
+    echo "Unknown install mode: $MODE (expected 'lazyvim', 'tmux', or 'everything')" >&2
     exit 1
     ;;
 esac
@@ -94,6 +97,28 @@ if [ "$MODE" = "lazyvim" ]; then
   link "$DOTFILES_DIR/.config/nvim" "$HOME/.config/nvim"
 
   log "Done. Run 'nvim' to let LazyVim install its plugins."
+  exit 0
+fi
+
+if [ "$MODE" = "tmux" ]; then
+  TMUX_PACKAGES=(tmux git curl)
+  if command -v apt >/dev/null 2>&1; then
+    log "Installing packages via apt (sudo required)"
+    sudo apt update
+    sudo apt install -y "${TMUX_PACKAGES[@]}" || log "Some packages failed to install (check names for this distro release), continuing"
+  else
+    log "No apt found, skipping package install — install manually: ${TMUX_PACKAGES[*]}"
+  fi
+
+  # tmux plugin manager (plugins are fetched by TPM itself, never vendored here)
+  if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
+    log "Installing tmux plugin manager"
+    git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+  fi
+
+  link "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
+
+  log "Done. Start tmux, then press prefix+I to fetch plugins."
   exit 0
 fi
 
