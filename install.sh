@@ -44,6 +44,12 @@ log "Install mode: $MODE"
 # ---------------------------------------------------------------------------
 # 1. Get the repo onto disk
 # ---------------------------------------------------------------------------
+if ! command -v git >/dev/null 2>&1 && command -v apt >/dev/null 2>&1; then
+  log "Installing git (sudo required)"
+  sudo apt update
+  sudo apt install -y git
+fi
+
 if [ ! -d "$DOTFILES_DIR/.git" ]; then
   log "Cloning dotfiles into $DOTFILES_DIR"
   git clone "$REPO_URL" "$DOTFILES_DIR"
