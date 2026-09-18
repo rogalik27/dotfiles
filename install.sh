@@ -9,6 +9,7 @@
 # be prompted; otherwise it defaults to "everything".
 #   lazyvim    - just the Neovim/LazyVim config and the tools it needs
 #   tmux       - just the tmux config and its plugin manager
+#   docker     - just Docker Engine + the Compose plugin
 #   everything - the full desktop setup (sway/waybar/tmux/etc), current behavior
 set -euo pipefail
 
@@ -24,11 +25,13 @@ if [ -z "$MODE" ]; then
     echo "What would you like to install?"
     echo "  1) lazyvim    - Neovim/LazyVim config only"
     echo "  2) tmux       - tmux config only"
-    echo "  3) everything - full desktop setup (default)"
-    read -rp "Choice [3]: " choice
+    echo "  3) docker     - Docker Engine + Compose plugin only"
+    echo "  4) everything - full desktop setup (default)"
+    read -rp "Choice [4]: " choice
     case "$choice" in
       1) MODE="lazyvim" ;;
       2) MODE="tmux" ;;
+      3) MODE="docker" ;;
       *) MODE="everything" ;;
     esac
   else
@@ -36,9 +39,9 @@ if [ -z "$MODE" ]; then
   fi
 fi
 case "$MODE" in
-  lazyvim|tmux|everything) ;;
+  lazyvim|tmux|docker|everything) ;;
   *)
-    echo "Unknown install mode: $MODE (expected 'lazyvim', 'tmux', or 'everything')" >&2
+    echo "Unknown install mode: $MODE (expected 'lazyvim', 'tmux', 'docker', or 'everything')" >&2
     exit 1
     ;;
 esac
@@ -100,6 +103,40 @@ install_neovim() {
   sudo ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim
   rm -rf "$tmpdir"
 }
+
+# Debian's own docker.io package lags behind upstream, so pull from Docker's
+# official apt repo instead.
+install_docker() {
+  if command -v docker >/dev/null 2>&1; then
+    log "Docker already installed ($(docker --version))"
+    return
+  fi
+  if ! command -v apt >/dev/null 2>&1; then
+    log "No apt found, skipping Docker install — install manually: https://docs.docker.com/engine/install/"
+    return
+  fi
+  log "Installing Docker Engine + Compose plugin (sudo required)"
+  sudo apt update
+  sudo apt install -y ca-certificates curl
+  sudo install -m 0755 -d /etc/apt/keyrings
+  sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+  sudo chmod a+r /etc/apt/keyrings/docker.asc
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+    | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
+  sudo apt update
+  sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+  if ! id -nG "$USER" | grep -qw docker; then
+    log "Adding $USER to the docker group (log out/in for it to take effect)"
+    sudo usermod -aG docker "$USER"
+  fi
+}
+
+if [ "$MODE" = "docker" ]; then
+  install_docker
+  log "Done. Log out and back in (or run 'newgrp docker') to use docker without sudo."
+  exit 0
+fi
 
 if [ "$MODE" = "lazyvim" ]; then
   LAZYVIM_PACKAGES=(git curl ripgrep fd-find build-essential unzip chafa fortune-mod cowsay)
@@ -170,6 +207,7 @@ else
 fi
 
 install_neovim
+install_docker
 
 if ! command -v gh >/dev/null 2>&1 && command -v apt >/dev/null 2>&1; then
   log "Installing GitHub CLI (gh)"
