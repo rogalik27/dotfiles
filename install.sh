@@ -3,6 +3,12 @@
 #
 # One-liner usage on a new machine:
 #   bash -c "$(curl -fsSL https://raw.githubusercontent.com/rogalik27/dotfiles/main/install.sh)"
+#
+# Pick what to install by passing a mode as the first argument, or via
+# INSTALL_MODE. If neither is given and the terminal is interactive, you'll
+# be prompted; otherwise it defaults to "everything".
+#   lazyvim    - just the Neovim/LazyVim config and the tools it needs
+#   everything - the full desktop setup (sway/waybar/tmux/etc), current behavior
 set -euo pipefail
 
 REPO_URL="https://github.com/rogalik27/dotfiles.git"
@@ -10,6 +16,30 @@ DOTFILES_DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
 BACKUP_DIR="$HOME/.dotfiles-backup-$(date +%Y%m%d-%H%M%S)"
 
 log() { printf '\033[1;32m==>\033[0m %s\n' "$1"; }
+
+MODE="${1:-${INSTALL_MODE:-}}"
+if [ -z "$MODE" ]; then
+  if [ -t 0 ]; then
+    echo "What would you like to install?"
+    echo "  1) lazyvim    - Neovim/LazyVim config only"
+    echo "  2) everything - full desktop setup (default)"
+    read -rp "Choice [2]: " choice
+    case "$choice" in
+      1) MODE="lazyvim" ;;
+      *) MODE="everything" ;;
+    esac
+  else
+    MODE="everything"
+  fi
+fi
+case "$MODE" in
+  lazyvim|everything) ;;
+  *)
+    echo "Unknown install mode: $MODE (expected 'lazyvim' or 'everything')" >&2
+    exit 1
+    ;;
+esac
+log "Install mode: $MODE"
 
 # ---------------------------------------------------------------------------
 # 1. Get the repo onto disk
@@ -20,6 +50,45 @@ if [ ! -d "$DOTFILES_DIR/.git" ]; then
 else
   log "Repo already present at $DOTFILES_DIR, pulling latest"
   git -C "$DOTFILES_DIR" pull --ff-only
+fi
+
+link() {
+  local src="$1" dest="$2"
+  mkdir -p "$(dirname "$dest")"
+  if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
+    return
+  fi
+  if [ -e "$dest" ] || [ -L "$dest" ]; then
+    mkdir -p "$BACKUP_DIR/$(dirname "${dest#"$HOME"/}")"
+    log "Backing up existing $dest -> $BACKUP_DIR"
+    mv "$dest" "$BACKUP_DIR/${dest#"$HOME"/}"
+  fi
+  ln -s "$src" "$dest"
+  log "Linked $dest -> $src"
+}
+
+if [ "$MODE" = "lazyvim" ]; then
+  LAZYVIM_PACKAGES=(neovim git curl ripgrep fd-find build-essential unzip)
+  if command -v apt >/dev/null 2>&1; then
+    log "Installing packages via apt (sudo required)"
+    sudo apt update
+    sudo apt install -y "${LAZYVIM_PACKAGES[@]}" || log "Some packages failed to install (check names for this distro release), continuing"
+  else
+    log "No apt found, skipping package install — install manually: ${LAZYVIM_PACKAGES[*]}"
+  fi
+
+  if ! command -v lazygit >/dev/null 2>&1; then
+    log "Installing lazygit"
+    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+    curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+    tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
+    sudo install /tmp/lazygit /usr/local/bin
+  fi
+
+  link "$DOTFILES_DIR/.config/nvim" "$HOME/.config/nvim"
+
+  log "Done. Run 'nvim' to let LazyVim install its plugins."
+  exit 0
 fi
 
 # ---------------------------------------------------------------------------
@@ -114,21 +183,6 @@ fi
 # ---------------------------------------------------------------------------
 # 3. Symlink dotfiles into place
 # ---------------------------------------------------------------------------
-link() {
-  local src="$1" dest="$2"
-  mkdir -p "$(dirname "$dest")"
-  if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
-    return
-  fi
-  if [ -e "$dest" ] || [ -L "$dest" ]; then
-    mkdir -p "$BACKUP_DIR/$(dirname "${dest#"$HOME"/}")"
-    log "Backing up existing $dest -> $BACKUP_DIR"
-    mv "$dest" "$BACKUP_DIR/${dest#"$HOME"/}"
-  fi
-  ln -s "$src" "$dest"
-  log "Linked $dest -> $src"
-}
-
 link "$DOTFILES_DIR/.bashrc" "$HOME/.bashrc"
 link "$DOTFILES_DIR/.bash_aliases" "$HOME/.bash_aliases"
 link "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
