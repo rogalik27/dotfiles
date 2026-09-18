@@ -118,7 +118,7 @@ if [ "$MODE" = "tmux" ]; then
 
   link "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
 
-  log "Done. Start tmux, then press prefix+I to fetch plugins."
+  log "Done. Start tmux, then press C-Space+I to fetch plugins."
   exit 0
 fi
 
@@ -266,5 +266,5 @@ else
   log "  systemctl --user enable --now airstatus.service bt-battery-daemon.service"
 fi
 
-log "Done. Start a new shell, then inside tmux press prefix+I to fetch plugins."
+log "Done. Start a new shell, then inside tmux press C-Space+I to fetch plugins."
 log "Set NWS_AI_API_KEY in your environment (or edit ~/.config/opencode/opencode.jsonc) for opencode's NWS provider."
