@@ -94,14 +94,46 @@ install_neovim() {
   else
     log "Installing Neovim (>= $NVIM_MIN_VERSION) from upstream release"
   fi
-  local tmpdir
+  local arch nvim_arch
+  arch="$(uname -m)"
+  case "$arch" in
+    x86_64) nvim_arch="x86_64" ;;
+    aarch64|arm64) nvim_arch="arm64" ;;
+    *)
+      log "No prebuilt Neovim release for architecture '$arch' — install manually: https://github.com/neovim/neovim/releases"
+      return
+      ;;
+  esac
+  local tmpdir asset
   tmpdir="$(mktemp -d)"
-  curl -Lo "$tmpdir/nvim-linux-x86_64.tar.gz" "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz"
+  asset="nvim-linux-${nvim_arch}"
+  curl -Lo "$tmpdir/$asset.tar.gz" "https://github.com/neovim/neovim/releases/latest/download/$asset.tar.gz"
   sudo rm -rf /opt/nvim
-  sudo tar xzf "$tmpdir/nvim-linux-x86_64.tar.gz" -C /opt
-  sudo mv /opt/nvim-linux-x86_64 /opt/nvim
+  sudo tar xzf "$tmpdir/$asset.tar.gz" -C /opt
+  sudo mv "/opt/$asset" /opt/nvim
   sudo ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim
   rm -rf "$tmpdir"
+}
+
+install_lazygit() {
+  if command -v lazygit >/dev/null 2>&1; then
+    return
+  fi
+  local arch lazygit_arch
+  arch="$(uname -m)"
+  case "$arch" in
+    x86_64) lazygit_arch="x86_64" ;;
+    aarch64|arm64) lazygit_arch="arm64" ;;
+    *)
+      log "No prebuilt lazygit release for architecture '$arch' — install manually: https://github.com/jesseduffield/lazygit/releases"
+      return
+      ;;
+  esac
+  log "Installing lazygit"
+  LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+  curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_${lazygit_arch}.tar.gz"
+  tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
+  sudo install /tmp/lazygit /usr/local/bin
 }
 
 # Debian's own docker.io package lags behind upstream, so pull from Docker's
@@ -149,14 +181,7 @@ if [ "$MODE" = "lazyvim" ]; then
   fi
 
   install_neovim
-
-  if ! command -v lazygit >/dev/null 2>&1; then
-    log "Installing lazygit"
-    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-    curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-    tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
-    sudo install /tmp/lazygit /usr/local/bin
-  fi
+  install_lazygit
 
   link "$DOTFILES_DIR/.config/nvim" "$HOME/.config/nvim"
 
@@ -224,13 +249,7 @@ if ! command -v atuin >/dev/null 2>&1; then
   curl --proto '=https' --tlsv1.2 -sSf https://setup.atuin.sh | bash
 fi
 
-if ! command -v lazygit >/dev/null 2>&1; then
-  log "Installing lazygit"
-  LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-  curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-  tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
-  sudo install /tmp/lazygit /usr/local/bin
-fi
+install_lazygit
 
 # tmux plugin manager (plugins are fetched by TPM itself, never vendored here)
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
