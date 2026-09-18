@@ -83,13 +83,15 @@ link() {
 # so fetch the current upstream release instead of relying on the distro.
 NVIM_MIN_VERSION="0.11.2"
 install_neovim() {
+  local ver=""
   if command -v nvim >/dev/null 2>&1; then
-    local ver
-    ver=$(nvim --version | head -1 | grep -Po '\d+\.\d+\.\d+')
-    if [ "$(printf '%s\n%s\n' "$ver" "$NVIM_MIN_VERSION" | sort -V | head -1)" = "$NVIM_MIN_VERSION" ]; then
-      log "Neovim $ver already satisfies >= $NVIM_MIN_VERSION"
-      return
-    fi
+    ver=$(nvim --version 2>/dev/null | head -1 | grep -Po '\d+\.\d+\.\d+' || true)
+  fi
+  if [ -n "$ver" ] && [ "$(printf '%s\n%s\n' "$ver" "$NVIM_MIN_VERSION" | sort -V | head -1)" = "$NVIM_MIN_VERSION" ]; then
+    log "Neovim $ver already satisfies >= $NVIM_MIN_VERSION"
+    return
+  fi
+  if [ -n "$ver" ]; then
     log "Neovim $ver is older than $NVIM_MIN_VERSION, installing a current release"
   else
     log "Installing Neovim (>= $NVIM_MIN_VERSION) from upstream release"
