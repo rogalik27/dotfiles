@@ -77,7 +77,7 @@ link() {
 }
 
 if [ "$MODE" = "lazyvim" ]; then
-  LAZYVIM_PACKAGES=(neovim git curl ripgrep fd-find build-essential unzip)
+  LAZYVIM_PACKAGES=(neovim git curl ripgrep fd-find build-essential unzip chafa fortune-mod cowsay)
   if command -v apt >/dev/null 2>&1; then
     log "Installing packages via apt (sudo required)"
     sudo apt update
@@ -131,7 +131,7 @@ PACKAGES=(
   grim slurp swappy wl-clipboard libnotify-bin cliphist
   swayidle swaylock brightnessctl pulseaudio-utils network-manager
   dbus polkitd lxpolkit jq playerctl python3 chafa
-  flameshot nautilus
+  flameshot nautilus fortune-mod cowsay
 )
 
 if command -v apt >/dev/null 2>&1; then
